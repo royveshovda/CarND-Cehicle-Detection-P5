@@ -1,3 +1,13 @@
+# Project specific data
+vehicles
+non-vehicles
+non_car_images.dat
+car_images.dat
+car_features.data
+non_car_features.data
+model.dat
+scaler.dat
+
 # Created by .ignore support plugin (hsz.mobi)
 ### macOS template
 *.DS_Store
