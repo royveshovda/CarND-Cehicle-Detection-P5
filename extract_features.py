@@ -93,7 +93,7 @@ def get_features_parameters():
     Returns the parameters of the model
     '''
     params = dict()
-    params['color_space'] = 'YUV'
+    params['color_space'] = 'YCrCb'
     params['hist_bins'] = 32
     params['orient'] = 9
     params['pix_per_cell'] = 8

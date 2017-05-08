@@ -63,8 +63,8 @@ print("model loaded")
 def single_image_pipeline(img):
     params = get_features_parameters()
     #scales = [0.75, 1.0, 1.5, 2]
-    scales = [1, 1.25, 1.5, 1.8]
-    threshold = 5
+    scales = [0.75, 1, 1.25, 1.5, 1.8]
+    threshold = 3
     boxes = find_cars(img, (400, 700), scales, svc, X_scaler,
                         params['orient'], params['pix_per_cell'], params['cell_per_block'], params['spatial_size'], params['hist_bins'], params['color_space'])
     heatmap = np.zeros_like(img[:,:,0])
@@ -106,8 +106,6 @@ def find_cars(img, y_limits, scales, svc, X_scaler, orient, pix_per_cell, cell_p
         hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block, vis=False, feature_vec=False)
         hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block, vis=False, feature_vec=False)
         hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block, vis=False, feature_vec=False)
-
-
 
         for xb in range(nxsteps):
             for yb in range(nysteps):
@@ -159,7 +157,6 @@ def process_project_video():
 def test_single_pipeline():
     img = cv2.imread("test_images/test6.jpg")
     start = time.process_time()
-    #img_dst = single_image_pipeline(img)
     img_dst = single_image_pipeline(img)
     end = time.process_time()
     cv2.imwrite("output_images/processed.jpg", img_dst)

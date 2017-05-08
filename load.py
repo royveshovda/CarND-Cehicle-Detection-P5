@@ -14,12 +14,7 @@ non_car_files = [os.path.join(dirpath, f)
     for dirpath, dirnames, files in os.walk(path2)
     for f in files if f.endswith('.png')]
 
-#print number of files availabel
-print(len(car_files))
-print(len(non_car_files))
 
-
-#Resize to 64,64
 def data_read_images_from_files(file_names):
     images = [];
     for file in file_names:
@@ -47,7 +42,7 @@ non_car = data_read_images_from_files(non_car_files)
 data_info = data_look(car, non_car)
 
 #print the data info
-print('Your function returned a count of',
+print('Count of',
       data_info["n_cars"], ' cars and',
       data_info["n_notcars"], ' non-cars')
 print('of size: ', data_info["image_shape"], ' and data type:',

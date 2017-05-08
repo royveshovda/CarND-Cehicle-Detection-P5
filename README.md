@@ -33,36 +33,34 @@ I have provided this writeup as part of a GitHub-repo, so this is the README you
 
 #### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code is contained in the file called 'extract_features.py' in the function 'get_hog_features'. I started by loading all the files, both vehicles and non-vehicles. The loading happens in the file 'load.py', and all the images are saved as numpy dat-files, after they are resized to 64x64. This allowed me to play around with different parameters without having to run the loading and resizing again and again.
 
-I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
+After I have extracted all the features (I chose to extract histogram features as well as spatial features, in addition to HOG features), I saved the features for all the images back to numpy dat-files.
 
-![alt text][image1]
-
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
-
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
-
-
-![alt text][image2]
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I tried various combinations of parameters and ended up using the colorspace for YCrCb and all the channels. Simply because this seems to give the best result after training.
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+I trained a linear SVM from sklearn by using the features extracted from the previous step, and the code in the file 'train.py'.
+
+I first applied a scaling step to normalize the input features. Then I split the data in 80% training data, and 20% test data. Before I called the train function. After the classifier was done training, I saved the classifier and scaler using pickle. This allowed me to play around with different pipelines without having to retrain the classifier.
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+
+## TODO
 
 I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
 
 ![alt text][image3]
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+
+## TODO
 
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
@@ -72,10 +70,12 @@ Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spat
 ### Video Implementation
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./out_project.mp4)
 
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+
+## TODO
 
 I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
@@ -99,4 +99,10 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a videostream. The runtime for a single image is about 2 seconds. 
+The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 2 seconds. So several optimizations should be considered.
+
+I use various scalings to search for cars. This search could be varying the search space based on the scale. As mentioned in class, small cars will only appear at a distance, so we should only search for them at a distance. The current implementation executes the search for all scales inside all the y-boundaries. This could speed up the process.
+
+The detection in itself seems to do a pretty good job on the provided videos. The classifier needs to be trained on a much larger image base and under various light conditions to be useful in real life scenarios.
+
+However the biggest improvement could come from implementing a Deep Learning pipeline. Convolutional Neural Networks have come a long way these days, and should be able to solve this project fairly easy.
