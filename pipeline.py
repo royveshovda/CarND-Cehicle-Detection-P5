@@ -63,7 +63,7 @@ print("model loaded")
 def single_image_pipeline(img):
     params = get_features_parameters()
     #scales = [0.75, 1.0, 1.5, 2]
-    scales = [0.75, 1, 1.25, 1.5, 1.8]
+    scales = [1, 1.5, 2]
     threshold = 3
     boxes = find_cars(img, (400, 700), scales, svc, X_scaler,
                         params['orient'], params['pix_per_cell'], params['cell_per_block'], params['spatial_size'], params['hist_bins'], params['color_space'])
@@ -168,7 +168,7 @@ def test_single_pipeline():
 #img_dst = single_image_pipeline(img)
 #cv2.imwrite("output_images/processed.jpg", img_dst)
 #process_test_video()
-process_project_video()
-#test_single_pipeline()
+#process_project_video()
+test_single_pipeline()
 #play_video('test_video.mp4',"test_output1.avi")
 #play_video('project_video.mp4',"output1.avi")

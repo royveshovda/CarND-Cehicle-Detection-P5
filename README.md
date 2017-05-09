@@ -10,10 +10,6 @@ The goals / steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
 [image5]: ./examples/bboxes_and_heat.png
 [image6]: ./examples/labels_map.png
 [image7]: ./examples/output_bboxes.png
@@ -37,10 +33,11 @@ The code is contained in the file called 'extract_features.py' in the function '
 
 After I have extracted all the features (I chose to extract histogram features as well as spatial features, in addition to HOG features), I saved the features for all the images back to numpy dat-files.
 
-
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and ended up using the colorspace for YCrCb and all the channels. Simply because this seems to give the best result after training.
+I tried various combinations of parameters and ended up using the colorspace for YCrCb and all the channels. Simply because this seems to give the best result after training. I tried a number of different color spaces, number of channels and other parameters, but ended back with YCrCb with 9 orientations, 8 pixels per cels and 2 cells per block. This gave the most reliable training score, and performed best on the video stream as well.
+
+I obviously was not able to test all combinations, so I might have missed a less compute expensive combination.
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
@@ -52,11 +49,9 @@ I first applied a scaling step to normalize the input features. Then I split the
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-## TODO
+I decided to go for a combination of different scales, to be able to detect cars at various distances. I tried different scales, but ended up with a set of [0.7, 1, 1.4, 1.8] which seems to detect cars as desired. Again using a set hit the algorithms performance, but increased the accuracy.
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
-
-![alt text][image3]
+The implementation can be found in 'pipeline.py' in the method called 'find_cars', where I loop through the different scales and tries all the sliding windows.
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
@@ -99,10 +94,14 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 2 seconds. So several optimizations should be considered.
+The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 1.3 seconds. So several optimizations should be considered.
 
 I use various scalings to search for cars. This search could be varying the search space based on the scale. As mentioned in class, small cars will only appear at a distance, so we should only search for them at a distance. The current implementation executes the search for all scales inside all the y-boundaries. This could speed up the process.
 
 The detection in itself seems to do a pretty good job on the provided videos. The classifier needs to be trained on a much larger image base and under various light conditions to be useful in real life scenarios.
+
+The detection does jump a bit. I have read others solve this by averaging over something like 6 frames.
+
+I also would like the detection to work when cars are at a bit longer distance. This could be solved by including more scales in the processing. This would slow down the processing more, so I decided to leave the detection for now.
 
 However the biggest improvement could come from implementing a Deep Learning pipeline. Convolutional Neural Networks have come a long way these days, and should be able to solve this project fairly easy.
