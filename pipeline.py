@@ -16,11 +16,12 @@ def add_heat(heatmap, bbox_list):
     return heatmap
 
 #apply thresholds to heatmap images
-def apply_threshold(heatmap, threshold):
+def apply_threshold(heatmap_in, threshold):
+    heatmap_out = np.copy(heatmap_in)
     # Zero out pixels below the threshold
-    heatmap[heatmap <= threshold] = 0
+    heatmap_out[heatmap_out <= threshold] = 0
     # Return thresholded map
-    return heatmap
+    return heatmap_out
 
 def draw_labeled_bboxes(img, labels):
     # Iterate through all detected cars
@@ -61,18 +62,23 @@ print("model loaded")
 
 
 def single_image_pipeline(img):
+    draw_img, _, _ = single_image_pipeline_raw(img)
+    return draw_img
+
+
+def single_image_pipeline_raw(img):
     params = get_features_parameters()
     #scales = [0.75, 1.0, 1.5, 2]
     scales = [1, 1.5, 2]
-    threshold = 3
+    threshold = 4
     boxes = find_cars(img, (400, 700), scales, svc, X_scaler,
                         params['orient'], params['pix_per_cell'], params['cell_per_block'], params['spatial_size'], params['hist_bins'], params['color_space'])
     heatmap = np.zeros_like(img[:,:,0])
-    heatmap = add_heat(heatmap, boxes)
-    heatmap = apply_threshold(heatmap, threshold)
-    labels = label(heatmap)
+    heatmap_raw = add_heat(heatmap, boxes)
+    heatmap_filtered = apply_threshold(heatmap_raw, threshold)
+    labels = label(heatmap_filtered)
     draw_img = draw_labeled_bboxes(img, labels)
-    return draw_img
+    return draw_img, heatmap_raw, heatmap_filtered
 
 def find_cars(img, y_limits, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins, color_space):
     #img = img.astype(np.float32)/255
@@ -155,19 +161,35 @@ def process_project_video():
     project_clip.write_videofile(project_output, audio=False)
 
 def test_single_pipeline():
-    img = cv2.imread("test_images/test6.jpg")
+    img = cv2.imread("test_images/test4.jpg")
     start = time.process_time()
-    img_dst = single_image_pipeline(img)
+    img_dst, heatmap_raw, heatmap_filtered = single_image_pipeline_raw(img)
+    #img_dst = single_image_pipeline(img)
     end = time.process_time()
-    cv2.imwrite("output_images/processed.jpg", img_dst)
-    #img_dst_heat = cv2.cvtColor(heatmap * 255, cv2.COLOR_GRAY2RGB)
-    #cv2.imwrite("output_images/processed_heatmap.jpg", img_dst_heat)
+    cv2.imwrite("output_images/heat_raw.jpg", cv2.cvtColor(heatmap_raw * 100, cv2.COLOR_GRAY2RGB))
+    cv2.imwrite("output_images/heat_filtered.jpg", cv2.cvtColor(heatmap_filtered * 100, cv2.COLOR_GRAY2RGB))
+    cv2.imwrite("output_images/heat_processed.jpg", img_dst)
     print(end - start)
+
+def produce_test_images():
+    img1 = cv2.imread("test_images/test1.jpg")
+    cv2.imwrite("output_images/processed_test1.jpg", single_image_pipeline(img1))
+
+    img3 = cv2.imread("test_images/test3.jpg")
+    cv2.imwrite("output_images/processed_test3.jpg", single_image_pipeline(img3))
+
+    img4 = cv2.imread("test_images/test4.jpg")
+    cv2.imwrite("output_images/processed_test4.jpg", single_image_pipeline(img4))
+
+    img6 = cv2.imread("test_images/test6.jpg")
+    cv2.imwrite("output_images/processed_test6.jpg", single_image_pipeline(img6))
+
 
 #img = cv2.imread("test_images/test6.jpg")
 #img_dst = single_image_pipeline(img)
 #cv2.imwrite("output_images/processed.jpg", img_dst)
 #process_test_video()
+#produce_test_images()
 process_project_video()
 #test_single_pipeline()
 #play_video('test_video.mp4',"test_output1.avi")
