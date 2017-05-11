@@ -9,11 +9,19 @@ import pickle
 from extract_features import  *
 from scipy.ndimage.measurements import label
 import time
+from collections import deque
+
+def add_global_heat(heatmap, bbox_list_of_lists):
+    for bbox_list in bbox_list_of_lists:
+        for box in bbox_list:
+            heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
+    return heatmap
 
 def add_heat(heatmap, bbox_list):
     for box in bbox_list:
         heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
     return heatmap
+
 
 #apply thresholds to heatmap images
 def apply_threshold(heatmap_in, threshold):
@@ -22,6 +30,7 @@ def apply_threshold(heatmap_in, threshold):
     heatmap_out[heatmap_out <= threshold] = 0
     # Return thresholded map
     return heatmap_out
+
 
 def draw_labeled_bboxes(img, labels):
     # Iterate through all detected cars
@@ -50,6 +59,7 @@ def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
     # Return the image copy with boxes drawn
     return imcopy
 
+
 #load the trained model
 filename = 'model.dat'
 svc = pickle.load(open(filename, 'rb'))
@@ -60,6 +70,9 @@ filename_scaler = 'scaler.dat'
 X_scaler = pickle.load(open(filename_scaler, 'rb'))
 print("model loaded")
 
+# Keeps only the last x appended box-lists
+heatmap_boxes = deque(maxlen=5)
+
 
 def single_image_pipeline(img):
     draw_img, _, _ = single_image_pipeline_raw(img)
@@ -67,14 +80,19 @@ def single_image_pipeline(img):
 
 
 def single_image_pipeline_raw(img):
+    global heatmap_boxes
     params = get_features_parameters()
     #scales = [0.75, 1.0, 1.5, 2]
     scales = [1, 1.5, 2]
-    threshold = 4
+    #threshold = 1
     boxes = find_cars(img, (400, 700), scales, svc, X_scaler,
                         params['orient'], params['pix_per_cell'], params['cell_per_block'], params['spatial_size'], params['hist_bins'], params['color_space'])
+
+    heatmap_boxes.append(boxes)
+
     heatmap = np.zeros_like(img[:,:,0])
-    heatmap_raw = add_heat(heatmap, boxes)
+    heatmap_raw = add_global_heat(heatmap, list(heatmap_boxes))
+    threshold = len(heatmap_boxes) + 2
     heatmap_filtered = apply_threshold(heatmap_raw, threshold)
     labels = label(heatmap_filtered)
     draw_img = draw_labeled_bboxes(img, labels)
@@ -185,12 +203,7 @@ def produce_test_images():
     cv2.imwrite("output_images/processed_test6.jpg", single_image_pipeline(img6))
 
 
-#img = cv2.imread("test_images/test6.jpg")
-#img_dst = single_image_pipeline(img)
-#cv2.imwrite("output_images/processed.jpg", img_dst)
-#process_test_video()
-#produce_test_images()
-process_project_video()
 #test_single_pipeline()
-#play_video('test_video.mp4',"test_output1.avi")
-#play_video('project_video.mp4',"output1.avi")
+#produce_test_images()
+#process_test_video()
+process_project_video()
