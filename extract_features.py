@@ -102,7 +102,7 @@ def get_features_parameters():
     params['spatial_feat'] = True
     params['hist_feat'] = True
     params['hog_feat'] = True
-    params['spatial_size'] = (16, 16)
+    params['spatial_size'] = (32, 32)
     return params
 
 

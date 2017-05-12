@@ -102,7 +102,7 @@ Here's a [link to my video result](./out_project.mp4)
 
 I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions. The threshold was recorded over the last 5 frames to avoid false positives. I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
-The image series in the table below shows 5 frames from the test video. In frame 11, 12 and 13 one can see a false detection to the left in the picture. These are removed when the threshold is applied.
+The image series in the table below shows 5 frames from the test video.
 
 
 | Frame | heatmap raw | heatmap filtered | result |
@@ -119,7 +119,7 @@ The image series in the table below shows 5 frames from the test video. In frame
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 20 seconds. So several optimizations should be considered. The main contributor to the speed is the choice of kernel in the SVM. I decided to switch to 'rbf' for precision, but took a huge performance hit in that process. With linear SVM, the processing time was around 1.4 seconds. Compared to the current 20 seconds, my implementation has a long way to go.s
+The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 8.5 seconds. So several optimizations should be considered. The main contributor to the speed is the choice of kernel in the SVM. I decided to switch to 'rbf' for precision, but took a huge performance hit in that process. With linear SVM, the processing time was around 1.4 seconds. Compared to the current 8.5 seconds, my implementation has a long way to go.s
 
 I use various scalings to search for cars. This search could be varying the search space based on the scale. As mentioned in class, small cars will only appear at a distance, so we should only search for them at a distance. The current implementation executes the search for all scales inside all the y-boundaries. This could speed up the process.
 

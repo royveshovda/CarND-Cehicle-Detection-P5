@@ -71,7 +71,7 @@ X_scaler = pickle.load(open(filename_scaler, 'rb'))
 print("model loaded")
 
 # Keeps only the last x appended box-lists
-heatmap_boxes = deque(maxlen=5)
+heatmap_boxes = deque(maxlen=10)
 
 
 def single_image_pipeline(img):
@@ -93,28 +93,30 @@ def single_image_pipeline_raw(img):
     global heatmap_boxes
     params = get_features_parameters()
     #scales = [0.75, 1.0, 1.5, 2]
-    scales = [1, 1.5, 2]
+    scales = [(350, 500, 1), (400, 600, 1.5), (500, 700, 2.5)]
+    #scales = [1, 1.5, 2]
     #threshold = 1
-    boxes = find_cars(img, (400, 700), scales, svc, X_scaler,
+    boxes = find_cars(img, scales, svc, X_scaler,
                         params['orient'], params['pix_per_cell'], params['cell_per_block'], params['spatial_size'], params['hist_bins'], params['color_space'])
 
     heatmap_boxes.append(boxes)
 
     heatmap = np.zeros_like(img[:,:,0])
     heatmap_raw = add_global_heat(heatmap, list(heatmap_boxes))
-    threshold = len(heatmap_boxes) + 2
+    threshold = len(heatmap_boxes)
     heatmap_filtered = apply_threshold(heatmap_raw, threshold)
     labels = label(heatmap_filtered)
     draw_img = draw_labeled_bboxes(img, labels)
     return draw_img, heatmap_raw, heatmap_filtered
 
-def find_cars(img, y_limits, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins, color_space):
+def find_cars(img, scales, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins, color_space):
     #img = img.astype(np.float32)/255
 
-    img_tosearch = img[y_limits[0]:y_limits[1],:,:]
     img_boxes = []
 
-    for scale in scales:
+    for (ystart, ystop, scale) in scales:
+        img_tosearch = img[ystart:ystop,:,:]
+
         ctrans_tosearch = convert_color(img_tosearch, color_space=color_space)
         if scale != 1:
             imshape = ctrans_tosearch.shape
@@ -169,8 +171,8 @@ def find_cars(img, y_limits, scales, svc, X_scaler, orient, pix_per_cell, cell_p
                     xbox_left = np.int(xleft*scale)
                     ytop_draw = np.int(ytop*scale)
                     win_draw = np.int(window*scale)
-                    img_boxes.append(((xbox_left, ytop_draw+y_limits[0]),\
-                                     (xbox_left+win_draw,ytop_draw+win_draw+y_limits[0])))
+                    img_boxes.append(((xbox_left, ytop_draw+ystart),\
+                                     (xbox_left+win_draw,ytop_draw+win_draw+ystart)))
     return img_boxes
 
 
@@ -217,5 +219,5 @@ def produce_test_images():
 
 #test_single_pipeline()
 #produce_test_images()
-process_test_video()
-#process_project_video()
+#process_test_video()
+process_project_video()
