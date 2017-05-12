@@ -60,7 +60,7 @@ I first applied a scaling step to normalize the input features. Then I split the
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to go for a combination of different scales, to be able to detect cars at various distances. I tried different scales, but ended up with a set of [0.7, 1, 1.4, 1.8] which seems to detect cars as desired. Again using a set hit the algorithms performance, but increased the accuracy.
+I decided to go for a combination of different scales, to be able to detect cars at various distances. I tried different scales, but ended up with a set of [1, 1.5, 2] which seems to detect cars as desired. Again using a set hit the algorithms performance, but increased the accuracy.
 
 The implementation can be found in 'pipeline.py' in the method called 'find_cars', where I loop through the different scales and tries all the sliding windows.
 
@@ -100,18 +100,18 @@ Here's a [link to my video result](./out_project.mp4)
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions. The threshold was recorded over the last 5 frames to avoid false positives. I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
-Here's an example result showing the heatmap from an image:
+The image series in the table below shows 5 frames from the test video. In frame 11, 12 and 13 one can see a false detection to the left in the picture. These are removed when the threshold is applied.
 
-### Unfiltered heatmap:
-![alt text][image1]
 
-### Thresholded heatmap:
-![alt text][image2]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image3]
+| Frame | heatmap raw | heatmap filtered | result |
+|--|--|--|--|
+| 11 | <img src="output_images/stream_heatmap_raw11.jpg" width="200"/> | <img src="output_images/stream_heatmap_filtered11.jpg" width="200"/> | <img src="output_images/stream_processed11.jpg" width="200"/> |
+| 12 | <img src="output_images/stream_heatmap_raw12.jpg" width="200"/> | <img src="output_images/stream_heatmap_filtered12.jpg" width="200"/> | <img src="output_images/stream_processed12.jpg" width="200"/> |
+| 13 | <img src="output_images/stream_heatmap_raw13.jpg" width="200"/> | <img src="output_images/stream_heatmap_filtered13.jpg" width="200"/> | <img src="output_images/stream_processed13.jpg" width="200"/> |
+| 14 | <img src="output_images/stream_heatmap_raw14.jpg" width="200"/> | <img src="output_images/stream_heatmap_filtered14.jpg" width="200"/> | <img src="output_images/stream_processed14.jpg" width="200"/> |
+| 15 | <img src="output_images/stream_heatmap_raw15.jpg" width="200"/> | <img src="output_images/stream_heatmap_filtered15.jpg" width="200"/> | <img src="output_images/stream_processed15.jpg" width="200"/> |
 
 ---
 
@@ -119,7 +119,7 @@ Here's an example result showing the heatmap from an image:
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 1.3 seconds. So several optimizations should be considered.
+The main problem with this implementation is speed. Is is way too slow to do near realtime detection on a video stream. The runtime for a single image is about 20 seconds. So several optimizations should be considered. The main contributor to the speed is the choice of kernel in the SVM. I decided to switch to 'rbf' for precision, but took a huge performance hit in that process. With linear SVM, the processing time was around 1.4 seconds. Compared to the current 20 seconds, my implementation has a long way to go.s
 
 I use various scalings to search for cars. This search could be varying the search space based on the scale. As mentioned in class, small cars will only appear at a distance, so we should only search for them at a distance. The current implementation executes the search for all scales inside all the y-boundaries. This could speed up the process.
 

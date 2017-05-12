@@ -78,6 +78,16 @@ def single_image_pipeline(img):
     draw_img, _, _ = single_image_pipeline_raw(img)
     return draw_img
 
+counter = 0
+def single_image_pipeline_with_save(img):
+    global counter
+    counter += 1
+    draw_img, heatmap_raw, heatmap_filtered = single_image_pipeline_raw(img)
+    cv2.imwrite("output_images/stream_processed" + str(counter) + ".jpg", cv2.cvtColor(draw_img, cv2.COLOR_BGR2RGB))
+    cv2.imwrite("output_images/stream_heatmap_raw" + str(counter) + ".jpg", cv2.cvtColor(heatmap_raw * 100, cv2.COLOR_GRAY2RGB))
+    cv2.imwrite("output_images/stream_heatmap_filtered" + str(counter) + ".jpg", cv2.cvtColor(heatmap_filtered * 100, cv2.COLOR_GRAY2RGB))
+    return draw_img
+
 
 def single_image_pipeline_raw(img):
     global heatmap_boxes
@@ -165,10 +175,12 @@ def find_cars(img, y_limits, scales, svc, X_scaler, orient, pix_per_cell, cell_p
 
 
 def process_test_video():
+    global counter
+    counter = 0
     from moviepy.editor import VideoFileClip
     project_output = "out_test.mp4"
     clip_project = VideoFileClip("test_video.mp4")
-    project_clip = clip_project.fl_image(single_image_pipeline)
+    project_clip = clip_project.fl_image(single_image_pipeline_with_save)
     project_clip.write_videofile(project_output, audio=False)
 
 def process_project_video():
@@ -205,5 +217,5 @@ def produce_test_images():
 
 #test_single_pipeline()
 #produce_test_images()
-#process_test_video()
-process_project_video()
+process_test_video()
+#process_project_video()
